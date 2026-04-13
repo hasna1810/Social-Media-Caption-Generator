@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaptionAI — Social Media Caption Generator</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-inner container-fluid">
+    <div class="brand">
+      <span class="brand-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+      <span class="brand-name">Caption<span class="brand-accent">AI</span></span>
+    </div>
+    <div class="header-badge">
+      <span class="dot"></span> ResNet101 + Attention + LSTM
+    </div>
+  </div>
+</header>
+
+<!-- ── HERO ────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-content container">
+    <div class="hero-tag">AI-Powered Caption Generation</div>
+    <h1 class="hero-title">Turn Images Into<br /><span class="gradient-text">Viral Captions</span></h1>
+    <p class="hero-sub">Upload an image, select your platform, and let deep learning craft the perfect caption — styled for Instagram, Facebook, or LinkedIn.</p>
+  </div>
+</section>
+
+<!-- ── MAIN CARD ────────────────────────────────────────────────────────── -->
+<main class="main-section">
+  <div class="container">
+    <div class="app-card">
+
+      <!-- LEFT PANEL: Upload + Settings -->
+      <div class="panel panel-left">
+        <h2 class="panel-title"><span class="step-badge">01</span> Upload Image</h2>
+
+        <!-- Drop Zone -->
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <p class="drop-text">Drag & drop your image here<br /><span>or click to browse</span></p>
+          <input type="file" id="imageInput" accept="image/*" hidden />
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-box" id="previewBox" style="display:none;">
+          <img id="previewImg" src="" alt="Preview" />
+          <button class="btn-remove" id="removeImg" title="Remove"><i class="fa-solid fa-xmark"></i></button>
+          <div class="img-label" id="imgLabel"></div>
+        </div>
+
+        <hr class="divider" />
+
+        <h2 class="panel-title"><span class="step-badge">02</span> Choose Platform</h2>
+        <div class="platform-grid">
+          <label class="platform-card" data-platform="instagram">
+            <input type="radio" name="platform" value="instagram" checked hidden />
+            <div class="platform-icon"><i class="fa-brands fa-instagram"></i></div>
+            <div class="platform-name">Instagram</div>
+          </label>
+          <label class="platform-card" data-platform="facebook">
+            <input type="radio" name="platform" value="facebook" hidden />
+            <div class="platform-icon"><i class="fa-brands fa-facebook"></i></div>
+            <div class="platform-name">Facebook</div>
+          </label>
+          <label class="platform-card" data-platform="linkedin">
+            <input type="radio" name="platform" value="linkedin" hidden />
+            <div class="platform-icon"><i class="fa-brands fa-linkedin"></i></div>
+            <div class="platform-name">LinkedIn</div>
+          </label>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="btn-generate" id="generateBtn">
+          <span class="btn-text"><i class="fa-solid fa-bolt"></i> Generate Caption</span>
+          <span class="btn-loader" style="display:none;"><i class="fa-solid fa-spinner fa-spin"></i> Generating…</span>
+        </button>
+      </div>
+
+      <!-- RIGHT PANEL: Results -->
+      <div class="panel panel-right" id="resultPanel">
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon"><i class="fa-solid fa-image"></i></div>
+          <p>Your generated caption and analytics will appear here.</p>
+        </div>
+
+        <!-- Results (hidden until generated) -->
+        <div id="results" style="display:none;">
+
+          <!-- Step 1: Base Caption (from model) -->
+          <div class="result-section">
+            <div class="result-header">
+              <h3><i class="fa-solid fa-robot"></i> Model Generated Caption</h3>
+              <span class="step-tag">Step 1 — Raw Output</span>
+            </div>
+            <div class="caption-box base-caption-box" id="baseCaptionBox"></div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="caption-arrow">
+            <i class="fa-solid fa-arrow-down"></i>
+            <span id="arrowLabel">Styled by Flan-T5</span>
+          </div>
+
+          <!-- Step 2: Platform Styled Caption -->
+          <div class="result-section styled-section">
+            <div class="result-header">
+              <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Platform Caption</h3>
+              <div class="result-actions">
+                <button class="action-btn" id="copyBtn"><i class="fa-regular fa-copy"></i> Copy</button>
+                <button class="action-btn" id="downloadBtn"><i class="fa-solid fa-download"></i> Download</button>
+              </div>
+            </div>
+            <div class="platform-indicator" id="platformIndicator"></div>
+            <div class="caption-box" id="captionBox"></div>
+          </div>
+
+          <!-- Stats Row -->
+          <div class="stats-row">
+            <div class="stat-chip" id="wordCount">
+              <i class="fa-solid fa-font"></i>
+              <span class="stat-val">–</span>
+              <span class="stat-lbl">Words</span>
+            </div>
+            <div class="stat-chip" id="charCount">
+              <i class="fa-solid fa-ruler-horizontal"></i>
+              <span class="stat-val">–</span>
+              <span class="stat-lbl">Characters</span>
+            </div>
+            <div class="stat-chip" id="hashCount">
+              <i class="fa-solid fa-hashtag"></i>
+              <span class="stat-val">–</span>
+              <span class="stat-lbl">Hashtags</span>
+            </div>
+            <div class="stat-chip" id="sentimentChip">
+              <i class="fa-solid fa-face-smile"></i>
+              <span class="stat-val">–</span>
+              <span class="stat-lbl">Sentiment</span>
+            </div>
+          </div>
+
+          <!-- Analytics Grid -->
+          <div class="analytics-grid">
+
+            <!-- Quality Meter -->
+            <div class="analytics-card">
+              <h4 class="analytics-title"><i class="fa-solid fa-gauge-high"></i> Caption Quality</h4>
+              <div class="quality-score-wrap">
+                <canvas id="gaugeCanvas" width="180" height="100"></canvas>
+                <div class="quality-score-num" id="qualityNum">–</div>
+              </div>
+              <div class="quality-bars">
+                <div class="qbar-row">
+                  <span>Readability</span>
+                  <div class="qbar-track"><div class="qbar-fill read-fill" id="readBar"></div></div>
+                  <span id="readVal">–</span>
+                </div>
+                <div class="qbar-row">
+                  <span>Length</span>
+                  <div class="qbar-track"><div class="qbar-fill len-fill" id="lenBar"></div></div>
+                  <span id="lenVal">–</span>
+                </div>
+                <div class="qbar-row">
+                  <span>Engagement</span>
+                  <div class="qbar-track"><div class="qbar-fill eng-fill" id="engBar"></div></div>
+                  <span id="engVal">–</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Radar Chart -->
+            <div class="analytics-card">
+              <h4 class="analytics-title"><i class="fa-solid fa-chart-radar"></i> Platform Style</h4>
+              <div class="radar-wrap">
+                <canvas id="radarChart"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Sentiment Bar -->
+          <div class="sentiment-card" id="sentimentCard">
+            <h4 class="analytics-title"><i class="fa-solid fa-brain"></i> Sentiment Analysis</h4>
+            <div class="sentiment-bar-wrap">
+              <span class="sentiment-neg">Negative</span>
+              <div class="sentiment-track">
+                <div class="sentiment-fill" id="sentimentFill"></div>
+                <div class="sentiment-needle" id="sentimentNeedle"></div>
+              </div>
+              <span class="sentiment-pos">Positive</span>
+            </div>
+            <div class="sentiment-label" id="sentimentLabel"></div>
+          </div>
+
+          <!-- Platform Comparison Bar Chart -->
+          <div class="analytics-card">
+            <h4 class="analytics-title"><i class="fa-solid fa-chart-bar"></i> Platform Comparison</h4>
+            <div class="engine-badge" id="engineBadge"></div>
+            <div style="position:relative; height:220px;">
+              <canvas id="platformCompChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Word Cloud -->
+          <div class="analytics-card" id="wordCloudCard" style="display:none;">
+            <h4 class="analytics-title"><i class="fa-solid fa-cloud"></i> Caption Word Cloud</h4>
+            <div class="wordcloud-wrap">
+              <img id="wordCloudImg" src="" alt="Word Cloud" />
+            </div>
+          </div>
+
+          <!-- Attention Heatmap -->
+          <div class="analytics-card" id="heatmapCard" style="display:none;">
+            <h4 class="analytics-title"><i class="fa-solid fa-fire"></i> Attention Heatmap</h4>
+            <p class="analytics-sub">Regions the model focused on while generating the caption</p>
+            <div class="heatmap-wrap">
+              <img id="heatmapImg" src="" alt="Attention Heatmap" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /app-card -->
+  </div><!-- /container -->
+</main>
+
+<!-- ── FOOTER ───────────────────────────────────────────────────────────── -->
+<footer class="site-footer-bottom">
+  <div class="container">
+    <p>CaptionAI &mdash; ResNet101 + Soft Attention + LSTM &nbsp;|&nbsp; Built with Flask &amp; TensorFlow</p>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast-msg" id="toastMsg"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

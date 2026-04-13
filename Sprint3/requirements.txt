@@ -1,0 +1,16 @@
+flask>=3.0.0
+tensorflow-cpu>=2.15.0
+pillow>=10.0.0
+numpy>=1.24.0
+werkzeug>=3.0.0
+gunicorn>=21.2.0
+
+# Platform caption styling (Flan-T5-Large)
+transformers>=4.38.0
+torch>=2.1.0
+sentencepiece>=0.1.99
+
+# Visualizations
+wordcloud>=1.9.3
+matplotlib>=3.8.0
+opencv-python-headless>=4.9.0
